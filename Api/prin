@@ -1,0 +1,44 @@
+<?php
+
+include 'conexion.php';
+
+$pdo=new conexion();
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id = $_POST['Id'];
+    $cantidad = $_POST['Cantidad'];
+    $fechaCompra = $_POST['Fecha_de_compra'];
+    $numeroFactura = $_POST['Numero_de_factura'];
+    $idproducto = $_POST['Id_producto'];
+
+    // Verificar si el producto existe en la tabla "productos_inventario"
+    $sqlVerificar = "SELECT COUNT(*) FROM productos_inventario WHERE Id = :Id";
+    $stmtVerificar = $pdo->prepare($sqlVerificar);
+    $stmtVerificar->bindValue(':Id', $id);
+    $stmtVerificar->execute();
+
+    if ($stmtVerificar->fetchColumn() > 0) {
+        // El producto existe en la tabla "actualizacion_inventario"
+        // Actualizar la tabla "actualizacion_inventario"
+        $sqlActualizar = "UPDATE actualizacion_inventario SET Cantidad = Cantidad + :Cantidad, Fecha_de_compra = :FechaCompra, Numero_de_factura = :NumeroFactura, Id_producto = :IdProducto WHERE Id = :Id";
+        $stmtActualizar = $pdo->prepare($sqlActualizar);
+        $stmtActualizar->bindValue(':Cantidad', $cantidad);
+        $stmtActualizar->bindValue(':FechaCompra', $fechaCompra);
+        $stmtActualizar->bindValue(':NumeroFactura', $numeroFactura);
+		$stmtActualizar->bindValue(':IdProducto', $id);
+        $stmtActualizar->bindValue(':Id', $id);
+        $stmtActualizar->execute();
+
+        header("HTTP/1.1 200 OK");
+        echo json_encode("Inventario actualizado correcto");
+        exit;
+    } else {
+        // Al ser el resultado del if "falso" se da un mensaje de ERROR
+        header("HTTP/1.1 404 Not Found");
+        echo json_encode("Producto existente.ERRR");
+        exit;
+    }
+}
+header ("HTTP/1.1 400 Bad REQUEST_METHOD")
+
+?>
